@@ -2938,6 +2938,13 @@ CREATE TABLE IF NOT EXISTS rnkCITATIONDICT (
   KEY reverse (citer, citee)
 ) ENGINE=MyISAM;
 
+CREATE TABLE IF NOT EXISTS rnkSELFCITEDICT (
+  citee int(10) unsigned NOT NULL,
+  citer int(10) unsigned NOT NULL,
+  last_updated datetime NOT NULL,
+  PRIMARY KEY id (citee, citer),
+  KEY reverse (citer, citee)
+) ENGINE=MyISAM;
 
 -- a table for missing citations. This should be scanned by a program
 -- occasionally to check if some publication has been cited more than
@@ -4585,5 +4592,6 @@ INSERT INTO upgrade (upgrade, applied) VALUES ('invenio_2013_03_29_idxINDEX_stop
 INSERT INTO upgrade (upgrade, applied) VALUES ('invenio_2013_08_20_bibauthority_updates',NOW());
 INSERT INTO upgrade (upgrade, applied) VALUES ('invenio_2013_08_22_new_index_itemcount',NOW());
 INSERT INTO upgrade (upgrade, applied) VALUES ('invenio_2013_10_18_crcLIBRARY_type',NOW());
+INSERT INTO upgrade (upgrade, applied) VALUES ('invenio_2013_03_20_new_self_citation_dict_table',NOW());
 
 -- end of file
