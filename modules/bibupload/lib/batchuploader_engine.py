@@ -181,9 +181,6 @@ def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None
     req.send_http_header()
 
     error_codes = {'not_authorized': 1}
-    # write temporary file:
-    if filetype != 'marcxml':
-        metafile = _transform_input_to_marcxml(file_input=metafile)
 
     user_info = collect_user_info(req)
     tempfile.tempdir = CFG_TMPSHAREDDIR
@@ -201,7 +198,8 @@ def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None
             return (error_codes['not_authorized'], allow[1])
 
     # run upload command:
-    task_arguments = ('bibupload', user_info['nickname'], mode, "--name=" + metafilename, "--priority=" + priority)
+    task_arguments = ('bibupload', user_info['nickname'], mode,
+                      "--priority=" + priority, "-N", "batchupload")
     if exec_date:
         date = exec_date
         if exec_time:
@@ -330,7 +328,8 @@ def document_upload(req=None, folder="", matching="", mode="", exec_date="", exe
                 user = "batchupload"
             # Execute bibupload with the appropiate mode
 
-            task_arguments = ('bibupload', user, "--" + mode, "--name=" + docfile, "--priority=" + priority)
+            task_arguments = ('bibupload', user, "--" + mode,
+                              "--priority=" + priority, "-N", "batchupload")
 
             if exec_date:
                 date = '--runtime=' + "\'" + exec_date + ' ' + exec_time + "\'"
@@ -650,6 +649,7 @@ def _transform_input_to_marcxml(file_input=""):
         transform_file(filename)
     finally:
         sys.stdout = old_stdout
+
     return new_stdout.getvalue()
 
 def _log(msg, logfile="webupload.log"):
