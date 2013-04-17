@@ -89,6 +89,8 @@ from invenio.oai_harvest_utils import get_nb_records_in_file, \
 from invenio.webuser import email_valid_p
 from invenio.mailutils import send_email
 
+import invenio.template
+oaiharvest_templates = invenio.template.load('oai_harvest')
 
 ## precompile some often-used regexp for speed reasons:
 REGEXP_OAI_ID = re.compile("<identifier.*?>(.*?)<\/identifier>", re.DOTALL)
@@ -787,6 +789,10 @@ def call_plotextractor(active_file, extracted_file, harvested_identifier_list, \
             downloaded_files[identifier] = {}
         updated_xml.append("<record>")
         updated_xml.append(record_xml)
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+            # We skip this record
+            updated_xml.append("</record>")
+            continue
         if 'latex' in plotextractor_types:
             # Run LaTeX plotextractor
             if "tarball" not in downloaded_files[identifier]:
@@ -867,6 +873,10 @@ def call_refextract(active_file, extracted_file, harvested_identifier_list,
             downloaded_files[identifier] = {}
         updated_xml.append("<record>")
         updated_xml.append(record_xml)
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+            # We skip this record
+            updated_xml.append("</record>")
+            continue
         if "pdf" not in downloaded_files[identifier]:
             current_exitcode, err_msg, dummy, pdf = \
                         plotextractor_harvest(identifier, active_file, selection=["pdf"])
@@ -936,6 +946,13 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
         current_exitcode = 0
         identifier = harvested_identifier_list[i]
         i += 1
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+            # We skip this record
+            updated_xml.append("<record>")
+            updated_xml.append(record_xml)
+            updated_xml.append("</record>")
+            continue
+
         # Grab BibRec instance of current record for later amending
         existing_record, status_code, dummy1 = create_record("<record>%s</record>" % (record_xml,))
         if status_code == 0:
@@ -1044,6 +1061,10 @@ def call_fulltext(active_file, extracted_file, harvested_identifier_list,
             downloaded_files[identifier] = {}
         updated_xml.append("<record>")
         updated_xml.append(record_xml)
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+            # We skip this record
+            updated_xml.append("</record>")
+            continue
         if "pdf" not in downloaded_files[identifier]:
             current_exitcode, err_msg, dummy, pdf = \
                         plotextractor_harvest(identifier, active_file, selection=["pdf"])
