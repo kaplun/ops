@@ -482,7 +482,8 @@ def plotextract_step(repository, active_files_list, harvested_identifier_list, d
                                                  updated_file,
                                                  identifiers,
                                                  downloaded_material_dict,
-                                                 repository["arguments"]['p_extraction-source'])
+                                                 repository["arguments"]['p_extraction-source'],
+                                                 repository["id"])
         if exitcode == 0:
             if err_msg != "":
                 write_message("plots from %s was extracted, but with some errors:\n%s" % \
@@ -519,7 +520,8 @@ def refextract_step(repository, active_files_list, harvested_identifier_list, do
                                               updated_file,
                                               identifiers,
                                               downloaded_material_dict,
-                                              repository["arguments"])
+                                              repository["arguments"],
+                                              repository["id"])
         if exitcode == 0:
             if err_msg != "":
                 write_message("references from %s was extracted, but with some errors:\n%s" % \
@@ -557,7 +559,8 @@ def authorlist_step(repository, active_files_list, harvested_identifier_list, do
                                                       identifiers,
                                                       downloaded_material_dict,
                                                       repository["arguments"].get('a_rt-queue', ""),
-                                                      repository["arguments"].get('a_stylesheet', "authorlist2marcxml.xsl"))
+                                                      repository["arguments"].get('a_stylesheet', "authorlist2marcxml.xsl"),
+                                                      repository["id"])
         if exitcode == 0:
             if err_msg != "":
                 write_message("authorlists from %s was extracted, but with some errors:\n%s" % \
@@ -594,7 +597,8 @@ def fulltext_step(repository, active_files_list, harvested_identifier_list, down
                                             updated_file,
                                             identifiers,
                                             downloaded_material_dict,
-                                            repository["arguments"].get('t_doctype', ""))
+                                            repository["arguments"].get('t_doctype', ""),
+                                            repository["id"])
         if exitcode == 0:
             write_message("fulltext from %s was successfully attached" % \
                           (active_file,))
@@ -755,7 +759,7 @@ def call_bibconvert(config, harvestpath, convertpath):
     return (exitcode, cmd_stderr)
 
 def call_plotextractor(active_file, extracted_file, harvested_identifier_list, \
-                       downloaded_files, plotextractor_types):
+                       downloaded_files, plotextractor_types, source_id):
     """
     Function that generates proper MARCXML containing harvested plots for
     each record.
@@ -766,6 +770,7 @@ def call_plotextractor(active_file, extracted_file, harvested_identifier_list, \
     @param downloaded_files: dict of identifier -> dict mappings for downloaded material.
     @param plotextractor_types: list of names of which plotextractor(s) to use (latex or pdf)
         (pdf is currently ignored).
+    @param source_id: the repository identifier
 
     @return: exitcode and any error messages as: (exitcode, err_msg)
     """
@@ -789,7 +794,7 @@ def call_plotextractor(active_file, extracted_file, harvested_identifier_list, \
             downloaded_files[identifier] = {}
         updated_xml.append("<record>")
         updated_xml.append(record_xml)
-        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p', source_id):
             # We skip this record
             updated_xml.append("</record>")
             continue
@@ -826,7 +831,7 @@ def call_plotextractor(active_file, extracted_file, harvested_identifier_list, \
     return exitcode, ""
 
 def call_refextract(active_file, extracted_file, harvested_identifier_list,
-                    downloaded_files, arguments):
+                    downloaded_files, arguments, source_id):
     """
     Function that calls refextractor to extract references and attach them to
     harvested records. It will download the fulltext-pdf for each identifier
@@ -838,7 +843,7 @@ def call_refextract(active_file, extracted_file, harvested_identifier_list,
     @param downloaded_files: dict of identifier -> dict mappings for downloaded material.
     @param arguments: dict of post-process arguments.
                       r_format, r_kb-journal-file, r_kb-rep-no-file
-
+    @param source_id: the repository identifier
     @return: exitcode and any error messages as: (exitcode, all_err_msg)
     """
     all_err_msg = []
@@ -873,7 +878,7 @@ def call_refextract(active_file, extracted_file, harvested_identifier_list,
             downloaded_files[identifier] = {}
         updated_xml.append("<record>")
         updated_xml.append(record_xml)
-        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p', source_id):
             # We skip this record
             updated_xml.append("</record>")
             continue
@@ -906,7 +911,7 @@ def call_refextract(active_file, extracted_file, harvested_identifier_list,
     return exitcode, ""
 
 def call_authorlist_extract(active_file, extracted_file, harvested_identifier_list,
-                            downloaded_files, queue, stylesheet):
+                            downloaded_files, queue, stylesheet, source_id):
     """
     Function that will look in harvested tarball for any authorlists. If found
     it will extract and convert the authors using a XSLT stylesheet.
@@ -925,6 +930,9 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
 
     @param queue: name of the RT queue
     @type queue: string
+
+    @param source_id: the repository identifier
+    @type source_id: integer
 
     @return: exitcode and any error messages as: (exitcode, all_err_msg)
     @rtype: tuple
@@ -946,7 +954,7 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
         current_exitcode = 0
         identifier = harvested_identifier_list[i]
         i += 1
-        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p', source_id):
             # We skip this record
             updated_xml.append("<record>")
             updated_xml.append(record_xml)
@@ -1038,6 +1046,7 @@ def call_fulltext(active_file, extracted_file, harvested_identifier_list,
     @param harvested_identifier_list: list of OAI identifiers for this active_file
     @param downloaded_files: dict of identifier -> dict mappings for downloaded material.
     @param doctype: doctype of downloaded file in BibDocFile
+    @param source_id: the repository identifier
 
     @return: exitcode and any error messages as: (exitcode, err_msg)
     """
@@ -1061,7 +1070,7 @@ def call_fulltext(active_file, extracted_file, harvested_identifier_list,
             downloaded_files[identifier] = {}
         updated_xml.append("<record>")
         updated_xml.append(record_xml)
-        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p'):
+        if not oaiharvest_templates.tmpl_should_process_record_with_mode(record_xml, 'p', source_id):
             # We skip this record
             updated_xml.append("</record>")
             continue
