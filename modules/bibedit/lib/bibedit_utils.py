@@ -83,6 +83,7 @@ from invenio.textmarc2xmlmarc import transform_file, ParseError
 from invenio.bibauthorid_name_utils import split_name_parts, \
                                         create_normalized_name
 from invenio.bibknowledge import get_kbr_values
+from invenio.webauthorprofile_config import deserialize
 
 # Precompile regexp:
 re_file_option = re.compile(r'^%s' % CFG_BIBEDIT_CACHEDIR)
@@ -1031,3 +1032,22 @@ def crossref_normalize_name(record):
         position = field[4]
         record_modify_subfield(rec=record, tag='700', subfield_code='a',
             value=new_author, subfield_position=0, field_position_global=position)
+
+
+def get_affiliation_for_paper(rec, name):
+    """ Returns guessed affiliations for a given record id and name
+
+    @param rec: record id to guess affiliations from
+    @type: string
+
+    @param name: string with the name of the author
+    @type: string
+    """
+    affs = run_sql("""SELECT affiliations
+                      FROM bibEDITAFFILIATIONS
+                      WHERE bibrec=%s
+                      AND name=%s""", (rec, name))
+    if not affs:
+        return None
+
+    return list(deserialize(affs[0][0]))
