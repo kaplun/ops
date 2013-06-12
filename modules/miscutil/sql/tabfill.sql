@@ -59,6 +59,7 @@ INSERT INTO field VALUES (36,'authority subject','authoritysubject');
 INSERT INTO field VALUES (37,'item count','itemcount');
 INSERT INTO field VALUES (38,'refers to excluding self cites','referstoexcludingselfcites');
 INSERT INTO field VALUES (39,'cited by excluding self cites','citedbyexcludingselfcites');
+INSERT INTO field VALUES (40,'cataloguer nickname','cataloguer');
 
 INSERT INTO field_tag VALUES (1,100,10);
 INSERT INTO field_tag VALUES (1,102,10);
