@@ -4637,6 +4637,13 @@ CREATE TABLE IF NOT EXISTS goto (
   KEY (modification_date)
 ) ENGINE=MyISAM;
 
+-- tables for bibcheck
+CREATE TABLE IF NOT EXISTS bibcheck_rules (
+  name varchar(150) NOT NULL,
+  last_run datetime NOT NULL default '0000-00-00',
+  PRIMARY KEY (name)
+) ENGINE=MyISAM;
+
 -- tables for author list manager
 CREATE TABLE IF NOT EXISTS `aulPAPERS` (
   `id` int(15) unsigned NOT NULL auto_increment,
