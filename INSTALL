@@ -154,6 +154,8 @@ Contents
           - (optional) Python unidecode if you want to introduce smarter
              author names matching:
              <http://pypi.python.org/pypi/Unidecode>
+          - (optional) Nydus, redis consistent hashing connector
+             <https://github.com/disqus/nydus>
 
         Note: MySQLdb version 1.2.1_p2 or higher is recommended.  If
               you are using an older version of MySQLdb, you may get
