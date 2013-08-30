@@ -36,6 +36,7 @@ import zlib
 import tempfile
 import sys
 from datetime import datetime
+from MySQLdb import ProgrammingError
 
 try:
     from cStringIO import StringIO
@@ -1043,10 +1044,16 @@ def get_affiliation_for_paper(rec, name):
     @param name: string with the name of the author
     @type: string
     """
-    affs = run_sql("""SELECT affiliations
-                      FROM bibEDITAFFILIATIONS
-                      WHERE bibrec=%s
-                      AND name=%s""", (rec, name))
+    try:
+        affs = run_sql("""SELECT affiliations
+                          FROM bibEDITAFFILIATIONS
+                          WHERE bibrec=%s
+                          AND name=%s""", (rec, name))
+    except ProgrammingError:
+        # Table bibEDITAFFILIATIONS does not exist. As it is not mandatory,
+        # return None
+        return None
+
     if not affs:
         return None
 
