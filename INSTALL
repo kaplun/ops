@@ -45,7 +45,8 @@ Contents
 
           $ sudo aptitude install sbcl cmucl pylint pychecker pyflakes \
               python-profiler python-epydoc libapache2-mod-xsendfile \
-              openoffice.org python-utidylib python-beautifulsoup
+              openoffice.org python-utidylib python-beautifulsoup \
+              python-unidecode
 
         Moreover, you should install some Message Transfer Agent (MTA)
         such as Postfix so that Invenio can email notification
@@ -150,6 +151,9 @@ Contents
           - (optional) Python Rauth if you want to enable OAuth 1.0/2.0
              support for authentication (depends on Python-2.6 or later):
              <http://packages.python.org/rauth/>
+          - (optional) Python unidecode if you want to introduce smarter
+             author names matching:
+             <http://pypi.python.org/pypi/Unidecode>
 
         Note: MySQLdb version 1.2.1_p2 or higher is recommended.  If
               you are using an older version of MySQLdb, you may get
