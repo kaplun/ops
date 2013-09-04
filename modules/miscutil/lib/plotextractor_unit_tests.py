@@ -21,7 +21,6 @@
 
 __revision__ = "$Id$"
 
-import os
 import unittest
 
 from invenio.plotextractor import put_it_together, \
@@ -31,9 +30,10 @@ from invenio.plotextractor import put_it_together, \
 from invenio.plotextractor_output_utils import remove_dups, \
                                                get_converted_image_name
 
-from invenio.config import CFG_TMPDIR, CFG_SITE_URL
+from plotextractor_getter import harvest_single
+
 from invenio.testutils import make_test_suite, run_test_suite
-from invenio.shellutils import run_shell_command
+
 
 class PutItTogetherTest(unittest.TestCase):
     """Test functions related to the put_it_together function."""
@@ -50,7 +50,7 @@ class PutItTogetherTest(unittest.TestCase):
         single_caption = 'singlecaption'
         single_label = 'singlelabel'
 
-        cur_image, caption, images_and_captions = \
+        dummy1, dummy2, images_and_captions = \
                 put_it_together(single_image, single_caption, single_label,
                                 self.empty_images_and_captions, self.dummy_line_index,
                                 self.empty_lines)
@@ -63,7 +63,7 @@ class PutItTogetherTest(unittest.TestCase):
         no_main_two_subs = ['', ['img1', 'img2']]
         single_caption = 'singlecaption'
         single_label = 'singlelabel'
-        cur_image, caption, images_and_captions = \
+        dummy1, dummy2, images_and_captions = \
                 put_it_together(no_main_two_subs, single_caption, single_label,
                                 self.empty_images_and_captions, self.dummy_line_index,
                                 self.empty_lines)
@@ -76,7 +76,7 @@ class PutItTogetherTest(unittest.TestCase):
         no_main_two_subs = ['', ['sub1', 'sub2']]
         main_and_two_sub_captions = ['main caption', ['subcap1', 'subcap2']]
         single_label = 'singlelabel'
-        cur_image, caption, images_and_captions = \
+        dummy1, dummy2, images_and_captions = \
                 put_it_together(no_main_two_subs, main_and_two_sub_captions, single_label,
                                 self.empty_images_and_captions, self.dummy_line_index,
                                 self.empty_lines)
@@ -91,7 +91,7 @@ class PutItTogetherTest(unittest.TestCase):
         main_and_two_sub_images = ['main', ['sub1', 'sub2']]
         main_and_two_sub_captions = ['main caption', ['subcap1', 'subcap2']]
         single_label = 'singlelabel'
-        cur_image, caption, images_and_captions = \
+        dummy1, dummy2, images_and_captions = \
                 put_it_together(main_and_two_sub_images,
                                 main_and_two_sub_captions,
                                 single_label,
@@ -107,7 +107,7 @@ class PutItTogetherTest(unittest.TestCase):
         single_image = 'singleimage'
         no_main_two_subcaptions = ['', ['subcap1', 'subcap2']]
         single_label = 'singlelabel'
-        cur_image, caption, images_and_captions = \
+        dummy1, dummy2, images_and_captions = \
                 put_it_together(single_image, no_main_two_subcaptions, single_label,
                                 self.empty_images_and_captions, self.dummy_line_index,
                                 self.empty_lines)
@@ -121,12 +121,13 @@ class PutItTogetherTest(unittest.TestCase):
         single_image = 'singleimage'
         no_caption = ''
         single_label = 'singlelabel'
-        cur_image, caption, images_and_captions = \
+        dummy1, dummy2, images_and_captions = \
                 put_it_together(single_image, no_caption, single_label,
                                 self.empty_images_and_captions, 1,
                                 self.example_lines)
         self.assertTrue(images_and_captions == [('singleimage', 'some caption', 'singlelabel')], \
                 'didn\'t correctly extract the caption for zipping')
+
 
 class TestFindOpenAndCloseBraces(unittest.TestCase):
 
@@ -202,6 +203,7 @@ class TestFindOpenAndCloseBraces(unittest.TestCase):
         self.assertTrue(end == -1, 'didn\'t identify non-brace')
         self.assertTrue(end_line == -1, 'didn\'t identify non-brace')
 
+
 class TestIntelligentlyFindFilenames(unittest.TestCase):
 
     def test_simple_test(self):
@@ -250,6 +252,7 @@ class TestIntelligentlyFindFilenames(unittest.TestCase):
         self.assertTrue('something.eps' in filenames, 'didn\'t find figure=')
         self.assertTrue('anotherthing.ps' in filenames, 'didn\'t find filename')
 
+
 class TestAssembleCaption(unittest.TestCase):
 
     def test_simple_test(self):
@@ -267,6 +270,7 @@ class TestAssembleCaption(unittest.TestCase):
         caption = assemble_caption(0, 0, 2, 8, lines)
         self.assertTrue(caption == 'some simple caption!', 'didn\'t correctly assemble ' + \
                         'caption')
+
 
 class TestRemoveDups(unittest.TestCase):
 
@@ -294,6 +298,7 @@ class TestRemoveDups(unittest.TestCase):
         self.assertTrue(pared_images_and_captions == [('img1', 'caption1 : caption2', 'label1', 'FIXME1')], \
                 'didn\'t merge captions correctly')
 
+
 class TestGetConvertedImageName(unittest.TestCase):
 
     def test_no_change_test(self):
@@ -318,9 +323,18 @@ class TestGetConvertedImageName(unittest.TestCase):
         converted_image = get_converted_image_name(image)
         self.assertTrue(converted_image == '/path/to/image.png', 'didn\'t change extension')
 
+
+class TestGetter(unittest.TestCase):
+
+    def test_harvest_single(self):
+        """plotextractor - check harvest_single"""
+        tarball, pdf = harvest_single('arXiv:1204.6260', '/tmp', ('pdf', 'tarball'))
+        self.assertTrue(pdf != None, "PDF is of unknown type")
+        self.assertTrue(tarball != None, "Tarball is of unknown type")
+
 TEST_SUITE = make_test_suite(PutItTogetherTest, TestFindOpenAndCloseBraces, \
                              TestIntelligentlyFindFilenames, TestAssembleCaption, TestRemoveDups, \
-                             TestGetConvertedImageName) # FIXME
+                             TestGetConvertedImageName, TestGetter)  # FIXME
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)
