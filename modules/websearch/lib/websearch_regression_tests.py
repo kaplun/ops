@@ -1261,8 +1261,8 @@ class WebSearchSearchEnginePythonAPITest(unittest.TestCase):
         self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9],
                          perform_request_search(recid=1, recidb=10))
 
-    def test_search_engine_python_api_ranked_by_citation(self):
-        """websearch - search engine Python API for citation ranking"""
+    def test_search_engine_python_api_old_style_ranked_by_citation(self):
+        """websearch - search engine Python API old style citation ranking"""
         self.assertEqual([86, 77],
                 perform_request_search(p='recid:95', rm='citation'))
 
@@ -1391,6 +1391,31 @@ class WebSearchSearchEnginePythonAPITest(unittest.TestCase):
        'rec_1_rev': get_fieldvalues(1, '005__')[0],
        'rec_85_rev': get_fieldvalues(85, '005__')[0],
        'rec_107_rev': get_fieldvalues(107, '005__')[0]})
+
+    def test_search_engine_python_api_ranked_by_citation_asc(self):
+        """websearch - search engine Python API for citation ranking asc"""
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                          16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                          30, 31, 32, 33, 34, 43, 44, 45, 46, 47, 48, 49, 50,
+                          51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+                          64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 75, 76, 80,
+                          82, 83, 85, 86, 87, 88, 89, 90, 92, 93, 96, 97, 98,
+                          99, 100, 101, 102, 103, 104, 107, 108, 109, 113, 18,
+                          74, 79, 91, 94, 77, 78, 95, 84, 81],
+                perform_request_search(p='', rm='citation', so='a'))
+
+    def test_search_engine_python_api_ranked_by_citation(self):
+        """websearch - search engine Python API for citation ranking"""
+        self.assertEqual(list(reversed(
+                         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                          16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                          30, 31, 32, 33, 34, 43, 44, 45, 46, 47, 48, 49, 50,
+                          51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+                          64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 75, 76, 80,
+                          82, 83, 85, 86, 87, 88, 89, 90, 92, 93, 96, 97, 98,
+                          99, 100, 101, 102, 103, 104, 107, 108, 109, 113, 18,
+                          74, 79, 91, 94, 77, 78, 95, 84, 81])),
+                perform_request_search(p='', rm='citation'))
 
     def test_search_engine_python_api_textmarc_field_filtered(self):
         """websearch - search engine Python API for Text MARC output, field-filtered"""

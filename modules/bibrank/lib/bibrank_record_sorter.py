@@ -216,19 +216,47 @@ def get_bibrank_methods(colID, ln=CFG_SITE_LANG):
                 avail_methods.append((rank_method_code, rank_method_code))
     return avail_methods
 
-def rank_records(rank_method_code, rank_limit_relevance, hitset_global, pattern=[], verbose=0, field='', rg=None, jrec=None):
-    """rank_method_code, e.g. `jif' or `sbr' (word frequency vector model)
-       rank_limit_relevance, e.g. `23' for `nbc' (number of citations) or `0.10' for `vec'
-       hitset, search engine hits;
-       pattern, search engine query or record ID (you check the type)
-       verbose, verbose level
-       output:
-       list of records
-       list of rank values
-       prefix
-       postfix
-       verbose_output"""
 
+def citation(rank_method_code, pattern, hitset, rank_limit_relevance, verbose):
+    """Sort records by number of citations
+
+    I am not sure why we filter on pattern here. Also we only take the first
+    pattern. This is weird.
+    """
+    if pattern:
+        # TODO: Move it to a higher level that knows what records to rank on
+        from invenio.search_engine import search_pattern
+        hitset &= intbitset(search_pattern(p=pattern[0]))
+    return find_citations(hitset, verbose)
+
+
+def rank_records(rank_method_code, rank_limit_relevance, hitset_global, pattern=[], verbose=0, field='', rg=None, jrec=None):
+    """Sorts records according to given method
+
+       Parameters:
+        - rank_method_code: Sort records using this method
+                            e.g. `jif' or `sbr' (word frequency vector model)
+        - rank_limit_relevance: A parameter given to the sorting method
+                                e.g. `23' for `nbc' (number of citations)
+                                     or `0.10' for `vec'
+                                     This is ignored when sorting by
+                                     citations. But I don't know what it means.
+        - hitset: records to sort, actually not all the records in the
+                  collection we are looking in (for some reason)
+        - pattern: search engine query, we filter only on the first as if that
+                   makes sense, it should be done at a higher level
+        - verbose, verbose level
+        - field: stuff
+        - rg: more stuff
+        - jrec: even more stuff
+
+       Output:
+       - list of records
+       - list of rank values
+       - prefix, useless it is always '('
+       - postfix, useless it is always ')'
+       - verbose_output
+    """
     voutput = ""
     configcreated = ""
 
@@ -237,12 +265,14 @@ def rank_records(rank_method_code, rank_limit_relevance, hitset_global, pattern=
     aftermap = starttime - time.time()
 
     try:
-        hitset = copy.deepcopy(hitset_global) #we are receiving a global hitset
-        if not globals().has_key('methods'):
+        # We are receiving a global hitset
+        hitset = copy.deepcopy(hitset_global)
+
+        if 'methods' not in globals():
             create_rnkmethod_cache()
 
         function = methods[rank_method_code]["function"]
-        #we get 'citation' method correctly here
+        # Check if we have specific function for sorting by this method
         func_object = globals().get(function)
 
         if verbose > 0:
@@ -251,10 +281,6 @@ def rank_records(rank_method_code, rank_limit_relevance, hitset_global, pattern=
 
         if func_object and pattern and pattern[0][0:6] == "recid:" and function == "word_similarity":
             result = find_similar(rank_method_code, pattern[0][6:], hitset, rank_limit_relevance, verbose, methods)
-        elif rank_method_code == "citation":
-            # we get rank_method_code correctly here. pattern[0] is the search word - not used by find_cit
-            result = find_citations(hitset, verbose)
-
         elif func_object:
             if function == "word_similarity":
                 result = func_object(rank_method_code, pattern, hitset, rank_limit_relevance, verbose, methods)
@@ -289,8 +315,8 @@ def rank_records(rank_method_code, rank_limit_relevance, hitset_global, pattern=
     afterfind = time.time() - starttime
 
     if result[0] and result[1]: #split into two lists for search_engine
-        results_similar_recIDs = map(lambda x: x[0], result[0])
-        results_similar_relevances = map(lambda x: x[1], result[0])
+        results_similar_recIDs = [x[0] for x in result[0]]
+        results_similar_relevances = [x[1] for x in result[0]]
         result = (results_similar_recIDs, results_similar_relevances, result[1], result[2], "%s" % configcreated + result[3])
         aftermap = time.time() - starttime
     else:
@@ -299,8 +325,8 @@ def rank_records(rank_method_code, rank_limit_relevance, hitset_global, pattern=
     #add stuff from here into voutput from result
     tmp = voutput+result[4]
     if verbose > 0:
-        tmp += "<br/>Elapsed time after finding: "+str(afterfind)+"\nElapsed after mapping: "+str(aftermap)
-    result = (result[0],result[1],result[2],result[3],tmp)
+        tmp += "<br/>Elapsed time after finding: %s\nElapsed after mapping: %s" % (afterfind, aftermap)
+    result = (result[0], result[1], result[2], result[3], tmp)
 
     #dbg = string.join(map(str,methods[rank_method_code].items()))
     #result = (None, "", adderrorbox("Debug ",rank_method_code+" "+dbg),"",voutput)
