@@ -4682,7 +4682,7 @@ class WebSearchPerformRequestSearchRefactoringTest(unittest.TestCase):
         self._run_test('p=boson;rm=citation', [95, 77, 108, 107, 50, 47, 1])
 
         if not get_external_word_similarity_ranker():
-            self._run_test('p=boson;rm=wrd', [108, 77, 47, 50, 95, 1, 107])
+            self._run_test('p=boson;rm=wrd', [107, 1, 95, 50, 47, 77, 108])
 
         self._run_test('p1=ellis;f1=author;m1=a;op1=a;p2=john;f2=author;m2=a', [9, 12, 14, 18, 118])
 
