@@ -4089,7 +4089,9 @@ def rank_records(req, rank_method_code, rank_limit_relevance, hitset_global, pat
                              rg=rg,
                              jrec=jrec)
 
-    if sort_order == 'd':
+    # Solution recs can be None, in case of error or other cases
+    # which should be all be changed to return an empty list.
+    if solution_recs and sort_order == 'd':
         solution_recs.reverse()
 
     return solution_recs, solution_scores, prefix, suffix, comment

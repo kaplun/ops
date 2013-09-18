@@ -1228,7 +1228,7 @@ class WebSearchSearchEnginePythonAPITest(unittest.TestCase):
         """websearch - search engine Python API for successful query, respect ranking parameters"""
         self.assertEqual([77, 84, 85],
                          perform_request_search(p='klebanov'))
-        self.assertEqual([85, 77, 84],
+        self.assertEqual([84, 77, 85],
                          perform_request_search(p='klebanov', rm='citation'))
 
     def test_search_engine_python_api_for_existing_record(self):
@@ -2028,11 +2028,11 @@ class WebSearchSearchEngineWebAPITest(unittest.TestCase):
                                                expected_text="[77, 84, 85]"))
         self.assertEqual([],
                          test_web_page_content(CFG_SITE_URL + '/search?p=klebanov&of=id&rm=citation',
-                                               expected_text="[85, 84]"))
+                                               expected_text="[84, 85]"))
         self.assertEqual([],
                          test_web_page_content(CFG_SITE_URL + '/search?p=klebanov&of=id&rm=citation',
                                                username="admin",
-                                               expected_text="[85, 77, 84]"))
+                                               expected_text="[84, 77, 85]"))
         self.assertEqual([],
                          test_web_page_content(CFG_SITE_URL + '/search?p=klebanov&of=intbitset&rm=citation',
                                                username="admin",
@@ -4622,8 +4622,6 @@ class WebSearchPerformRequestSearchRefactoringTest(unittest.TestCase):
 
         params.update(map(lambda y: (y[0], ',' in y[1] and ', ' not in y[1] and y[1].split(',') or y[1]), map(lambda x: x.split('=', 1), test_args.split(';'))))
 
-        #params.update(map(lambda x: x.split('=', 1), test_args.split(';')))
-
         req = cStringIO.StringIO()
         params['req'] = req
 
@@ -4681,7 +4679,7 @@ class WebSearchPerformRequestSearchRefactoringTest(unittest.TestCase):
 
         self._run_test('p=el*;sf=title', [118, 123, 100, 32, 8, 15, 16, 81, 97, 34, 23, 127, 58, 2, 14, 9, 128, 11, 30, 109, 52, 48, 94, 17, 56, 18, 91, 59, 12, 92, 74, 54, 103, 10, 51, 47, 13])
 
-        self._run_test('p=boson;rm=citation', [1, 47, 50, 107, 108, 77, 95])
+        self._run_test('p=boson;rm=citation', [95, 77, 108, 107, 50, 47, 1])
 
         if not get_external_word_similarity_ranker():
             self._run_test('p=boson;rm=wrd', [108, 77, 47, 50, 95, 1, 107])
