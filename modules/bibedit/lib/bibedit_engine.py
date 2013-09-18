@@ -115,6 +115,12 @@ from invenio.crossrefutils import get_marcxml_for_doi, CrossrefError
 import invenio.template
 bibedit_templates = invenio.template.load('bibedit')
 
+try:
+    BIBCATALOG_SYSTEM.ticket_search(0)
+    CFG_CAN_SEARCH_FOR_TICKET = True
+except NotImplementedError:
+    CFG_CAN_SEARCH_FOR_TICKET = False
+
 re_revdate_split = re.compile(r'^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)')
 
 def get_empty_fields_templates():
@@ -1315,7 +1321,7 @@ def perform_request_bibcatalog(request_type, uid, data):
 
     if request_type == 'getTickets':
         # Insert the tickets data in the response, if possible
-        if not CFG_BIBCATALOG_SYSTEM:
+        if not CFG_BIBCATALOG_SYSTEM or not CFG_CAN_SEARCH_FOR_TICKET:
             response['tickets'] = "<!--No ticket system configured-->"
         elif uid:
             bibcat_resp = BIBCATALOG_SYSTEM.check_system(uid)
@@ -1353,7 +1359,7 @@ def perform_request_bibcatalog(request_type, uid, data):
                 response['resultCode'] = CFG_BIBEDIT_AJAX_RESULT_CODES_REV['error_rt_connection']
     # closeTicket usecase
     elif request_type == 'closeTicket':
-        if not CFG_BIBCATALOG_SYSTEM:
+        if not CFG_BIBCATALOG_SYSTEM or not CFG_CAN_SEARCH_FOR_TICKET:
             response['ticket_closed_description'] = "<!--No ticket system configured-->"
             response['ticket_closed_code'] = CFG_BIBEDIT_AJAX_RESULT_CODES_REV['error_ticket_closed']
         elif uid:
@@ -1378,7 +1384,7 @@ def perform_request_bibcatalog(request_type, uid, data):
                 response['ticket_closed_code'] = CFG_BIBEDIT_AJAX_RESULT_CODES_REV['error_rt_connection']
         response['ticketid'] = data['ticketid']
     elif request_type == 'openTicket':
-        if not CFG_BIBCATALOG_SYSTEM:
+        if not CFG_BIBCATALOG_SYSTEM or not CFG_CAN_SEARCH_FOR_TICKET:
             response['ticket_opened_description'] = "<!--No ticket system configured-->"
             response['ticket_opened_code'] = CFG_BIBEDIT_AJAX_RESULT_CODES_REV['error_ticket_opened']
         elif uid:
