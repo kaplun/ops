@@ -190,7 +190,7 @@ class TestPerformance(unittest.TestCase):
 
     def test_response_speed_oai(self):
         """oairepository - speed of response for oai_dc output"""
-        allowed_seconds_per_record_oai = 0.03
+        allowed_seconds_per_record_oai = 0.04
 
         # Test oai ListRecords performance
         t0 = time.time()
