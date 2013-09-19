@@ -5797,7 +5797,10 @@ def prs_search_similar_records(kwargs=None, req=None, of=None, cc=None, pl_in_ur
     else:
         # record well exists, so find similar ones to it
         t1 = os.times()[4]
-        pattern = 'refersto:recid:%s' % recid
+        if rm == 'citation':
+            pattern = 'refersto:recid:%s' % recid
+        else:
+            pattern = 'recid:%s' % recid
         (results_similar_recIDs,
          results_similar_relevances,
          results_similar_relevances_prologue,
