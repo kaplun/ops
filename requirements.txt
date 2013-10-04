@@ -1,0 +1,16 @@
+MySQL-python
+PyPDF2
+msgpack-python
+http://www.reportlab.com/ftp/pyRXP-1.16-daily-unix.tar.gz
+ipython
+cython
+lxml
+rauth
+pyparsing
+unidecode
+reportlab
+python-magic
+python-openid
+python-dateutil
+rdflib
+
