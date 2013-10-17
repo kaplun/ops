@@ -4076,7 +4076,7 @@ function onRevertClick(revisionId){
    */
   updateStatus('updating');
   if (displayAlert('confirmRevert')){
-    createReq({recID: gRecID, revId: revisionId, requestType: 'revert',
+    createReq({recID: gRecID, revId: revisionId, lastRevId: gRecLatestRev, requestType: 'revert',
          force: onSubmitClick.force}, function(json){
       // Submission was successful.
       changeAndSerializeHash({state: 'submit', recid: gRecID});
