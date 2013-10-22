@@ -3017,6 +3017,7 @@ CREATE TABLE IF NOT EXISTS rnkCITATIONLOG (
   KEY citer (citer)
 ) ENGINE=MyISAM;
 
+
 -- a table for missing citations. This should be scanned by a program
 -- occasionally to check if some publication has been cited more than
 -- 50 times (or such), and alert cataloguers to create record for that
@@ -4404,6 +4405,7 @@ CREATE TABLE IF NOT EXISTS `aidPERSONIDPAPERS` (
   INDEX `pn-b` (`personid`, `name`) ,
   INDEX `timestamp-b` (`last_updated`) ,
   INDEX `flag-b` (`flag`) ,
+  INDEX `personid-flag-b` (`personid`,`flag`),
   INDEX `ptvrf-b` (`personid`, `bibref_table`, `bibref_value`, `bibrec`, `flag`)
 ) ENGINE=MYISAM;
 
@@ -4421,14 +4423,17 @@ CREATE TABLE IF NOT EXISTS `aidRESULTS` (
 CREATE TABLE IF NOT EXISTS `aidPERSONIDDATA` (
   `personid` BIGINT( 16 ) UNSIGNED NOT NULL ,
   `tag` VARCHAR( 64 ) NOT NULL ,
-  `data` VARCHAR( 256 ) NOT NULL ,
+  `data` VARCHAR( 256 ) NULL DEFAULT NULL ,
+  `datablob` LONGBLOB NULL DEFAULT NULL ,
   `opt1` MEDIUMINT( 8 ) NULL DEFAULT NULL ,
   `opt2` MEDIUMINT( 8 ) NULL DEFAULT NULL ,
   `opt3` VARCHAR( 256 ) NULL DEFAULT NULL ,
+  `last_updated` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   INDEX `personid-b` (`personid`) ,
   INDEX `tag-b` (`tag`) ,
   INDEX `data-b` (`data`) ,
-  INDEX `opt1` (`opt1`)
+  INDEX `opt1` (`opt1`) ,
+  INDEX `timestamp-b` (`last_updated`)
 ) ENGINE=MYISAM;
 
 CREATE TABLE IF NOT EXISTS `aidUSERINPUTLOG` (
@@ -4463,6 +4468,22 @@ CREATE TABLE IF NOT EXISTS `aidCACHE` (
   INDEX `name-b` (`object_name`),
   INDEX `key-b` (`object_key`),
   INDEX `last_updated-b` (`last_updated`)
+) ENGINE=MyISAM;
+
+-- tables for search engine
+
+CREATE TABLE IF NOT EXISTS `aidDENSEINDEX` (
+ `name_id` INT( 10 ) NOT NULL,
+ `person_name` VARCHAR( 256 ) NOT NULL,
+ `personids` LONGBLOB NOT NULL,
+ PRIMARY KEY (`name_id`)
+) ENGINE=MyISAM;
+
+CREATE TABLE IF NOT EXISTS `aidINVERTEDLISTS` (
+ `qgram` VARCHAR( 4 ) NOT NULL,
+ `inverted_list` LONGBLOB NOT NULL,
+ `list_cardinality` INT( 10 ) NOT NULL,
+ PRIMARY KEY (`qgram`)
 ) ENGINE=MyISAM;
 
 -- refextract tables:
@@ -4606,7 +4627,7 @@ CREATE TABLE IF NOT EXISTS webapikey (
 CREATE TABLE IF NOT EXISTS `wapCACHE` (
   `object_name` varchar(120) NOT NULL,
   `object_key` varchar(120) NOT NULL,
-  `object_value` longtext,
+  `object_value` longblob,
   `object_status` varchar(120),
   `last_updated` datetime NOT NULL,
   PRIMARY KEY  (`object_name`,`object_key`),
