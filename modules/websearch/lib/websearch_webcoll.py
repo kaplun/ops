@@ -927,7 +927,7 @@ def get_database_last_updated_timestamp():
     """
     database_tables_timestamps = []
     database_tables_timestamps.append(get_table_update_time('bibrec'))
-    database_tables_timestamps.append(get_table_update_time('bibfmt'))
+    #database_tables_timestamps.append(get_table_update_time('bibfmt'))
     try:
         database_tables_timestamps.append(get_table_update_time('idxWORD%'))
     except ValueError:
