@@ -217,10 +217,10 @@ def citation(rank_method_code, pattern, hitset, rank_limit_relevance, verbose):
     I am not sure why we filter on pattern here. Also we only take the first
     pattern. This is weird.
     """
-    if pattern:
-        # TODO: Move it to a higher level that knows what records to rank on
-        from invenio.search_engine import search_pattern
-        hitset &= intbitset(search_pattern(p=pattern[0]))
+    # if pattern:
+    #     # TODO: Move it to a higher level that knows what records to rank on
+    #     from invenio.search_engine import search_pattern
+    #     hitset &= intbitset(search_pattern(p=pattern[0]))
     return find_citations(hitset, verbose)
 
 
@@ -439,16 +439,9 @@ def find_citations(hitset, verbose):
         cites_counts = get_citation_dict('citations_counts')
         ret = [(recid, weight) for recid, weight in cites_counts
                                                         if recid in hitset]
-        ret = reversed(ret)
-    else:
-        ret = get_cited_by_weight(hitset)
-        ret.sort(key=itemgetter(1))
-
-    if verbose > 0:
-        voutput += "\nhitset %s\nfind_citations ret %s" % (hitset, ret)
-
-    if ret:
-        return ret, "(", ")", voutput
+        ret = list(reversed(ret))
+        recids_without_cites = hitset - get_citation_dict('citations_keys')
+        ret.extend([(recid, 0) for recid in recids_without_cites])
     else:
         ret = get_cited_by_weight(hitset)
         ret.sort(key=itemgetter(1))
