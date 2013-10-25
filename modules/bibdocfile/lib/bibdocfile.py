@@ -131,10 +131,21 @@ def _plugin_bldr(dummy, plugin_code):
     ret['supports'] = getattr(plugin_code, "supports", None)
     return ret
 
-CFG_BIBDOC_PLUGINS = PluginContainer(
-    os.path.join(CFG_PYLIBDIR,
-                'invenio', 'bibdocfile_plugins', 'bom_*.py'),
-    plugin_builder=_plugin_bldr)
+
+_CFG_BIBDOC_PLUGINS = None
+def get_plugins():
+    """
+    Lazy loading of plugins
+    """
+    global _CFG_BIBDOC_PLUGINS
+    if _CFG_BIBDOC_PLUGINS is None:
+        _CFG_BIBDOC_PLUGINS = PluginContainer(
+            os.path.join(CFG_PYLIBDIR,
+                    'invenio', 'bibdocfile_plugins', 'bom_*.py'),
+            plugin_builder=_plugin_bldr)
+    return _CFG_BIBDOC_PLUGINS
+
+
 
 bibdocfile_templates = invenio.template.load('bibdocfile')
 ## The above flag controls whether HTTP range requests are supported or not
@@ -1745,7 +1756,7 @@ class BibDoc(object):
         # Loading an appropriate plugin (by default a generic BibDoc)
         used_plugin = None
 
-        for dummy, plugin in CFG_BIBDOC_PLUGINS.iteritems():
+        for dummy, plugin in get_plugins().iteritems():
             if plugin['supports'](doctype, extensions):
                 used_plugin = plugin
 
