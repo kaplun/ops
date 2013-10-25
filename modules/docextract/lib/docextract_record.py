@@ -120,7 +120,7 @@ class BibRecord(object):
     def get(self, tag, default):
         try:
             r = self[tag]
-        except IndexError:
+        except KeyError:
             r = default
         return r
 
