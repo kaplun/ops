@@ -589,8 +589,7 @@ def get_pdf_snippets(recID, patterns, user_info):
 
     @param recID: record ID to consider
     @param patterns: list of patterns to retrieve
-    @param nb_words_around: max number of words around the matched pattern
-    @param max_snippets: max number of snippets to include
+    @param user_info: the user_info object from collect_user_info
     @return: snippet
     """
     from invenio.bibdocfile import BibRecDocs, check_bibdoc_authorization
