@@ -124,6 +124,18 @@ from invenio.pluginutils import PluginContainer
 
 import invenio.template
 
+def _plugin_bldr(dummy, plugin_code):
+    """Preparing the plugin dictionary structure"""
+    ret = {}
+    ret['create_instance'] = getattr(plugin_code, "create_instance", None)
+    ret['supports'] = getattr(plugin_code, "supports", None)
+    return ret
+
+CFG_BIBDOC_PLUGINS = PluginContainer(
+    os.path.join(CFG_PYLIBDIR,
+                'invenio', 'bibdocfile_plugins', 'bom_*.py'),
+    plugin_builder=_plugin_bldr)
+
 bibdocfile_templates = invenio.template.load('bibdocfile')
 ## The above flag controls whether HTTP range requests are supported or not
 ## when serving static files via Python. This is disabled by default as
@@ -1730,25 +1742,10 @@ class BibDoc(object):
             doctype = data["doctype"]
             extensions = data["extensions"]
 
-        # now check if the doctypype is supported by any particular plugin
-        def plugin_bldr(dummy, plugin_code):
-            """Preparing the plugin dictionary structure"""
-            ret = {}
-            ret['create_instance'] = getattr(plugin_code, "create_instance", None)
-            ret['supports'] = getattr(plugin_code, "supports", None)
-            return ret
-
-
-        bibdoc_plugins = PluginContainer(
-            os.path.join(CFG_PYLIBDIR,
-                     'invenio', 'bibdocfile_plugins', 'bom_*.py'),
-            plugin_builder=plugin_bldr)
-
-
         # Loading an appropriate plugin (by default a generic BibDoc)
         used_plugin = None
 
-        for dummy, plugin in bibdoc_plugins.iteritems():
+        for dummy, plugin in CFG_BIBDOC_PLUGINS.iteritems():
             if plugin['supports'](doctype, extensions):
                 used_plugin = plugin
 
