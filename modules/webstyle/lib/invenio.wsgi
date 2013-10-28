@@ -45,5 +45,8 @@ get_cited_by_weight([])
 # pre-load docextract knowledge bases
 from invenio.refextract_kbs import get_kbs
 get_kbs()
+# pre-load docextract author regexp
+from invenio.authorextract_re import get_author_regexps
+get_author_regexps()
 
 from invenio.webinterface_handler_wsgi import application
