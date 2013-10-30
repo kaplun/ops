@@ -293,6 +293,9 @@ def create_MARC(extracted_image_data, tarball, refno):
         if type(caption) == list:
             caption = " ".join(caption)
 
+        if not image_location:
+            continue
+
         if len(caption) < 3:
             subfields = []
             subfields.append(('a', image_location))
