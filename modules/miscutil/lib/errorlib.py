@@ -128,11 +128,14 @@ def register_emergency(msg, recipients=None):
         recipients = get_emergency_recipients()
     recipients = set(recipients)
     recipients.add(CFG_SITE_ADMIN_EMAIL)
-    subject = "Emergency notification from " + gethostname() + " at " + CFG_SITE_URL
+    mail_subject = "Emergency notification from " + gethostname() + " at " + CFG_SITE_URL
+    sms_subject = "ALERT"
     for address_str in recipients:
         if "sms" in address_str:
             # Probably an SMS, lets reduce things!
-            subject = "ALERT"
+            subject = sms_subject
+        else:
+            subject = mail_subject
         send_email(CFG_SITE_SUPPORT_EMAIL, address_str, subject, msg)
 
 def get_emergency_recipients(recipient_cfg=CFG_SITE_EMERGENCY_EMAIL_ADDRESSES, now=None):
