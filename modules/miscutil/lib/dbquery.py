@@ -159,8 +159,11 @@ def close_connection(dbhost=CFG_DATABASE_HOST):
     Highly relevant in multi-processing and multi-threaded modules
     """
     try:
-        _DB_CONN[dbhost][(os.getpid(), get_ident())].close()
-        del(_DB_CONN[dbhost][(os.getpid(), get_ident())])
+        db = _DB_CONN[dbhost][(os.getpid(), get_ident())]
+        cur = db.cursor()
+        cur.execute("UNLOCK TABLES")
+        db.close()
+        del _DB_CONN[dbhost][(os.getpid(), get_ident())]
     except KeyError:
         pass
 
