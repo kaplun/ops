@@ -259,81 +259,83 @@ def _dbdump_run_task_core():
     # read params:
     host = CFG_DATABASE_HOST
     port = CFG_DATABASE_PORT
-    if task_get_option('slave') and not task_get_option('dump_on_slave_helper_mode'):
-        connection = get_connection_for_dump_on_slave()
-        write_message("Dump on slave requested")
-        write_message("... checking if slave is well up...")
-        check_slave_is_up(connection)
-        write_message("... checking if slave is in consistent state...")
-        check_slave_is_in_consistent_state(connection)
-        write_message("... detaching slave database...")
-        detach_slave(connection)
-        write_message("... scheduling dump on slave helper...")
-        helper_arguments = []
-        if task_get_option("number"):
-            helper_arguments += ["--number", str(task_get_option("number"))]
-        if task_get_option("output"):
-            helper_arguments += ["--output", str(task_get_option("output"))]
-        if task_get_option("params"):
-            helper_arguments += ["--params", str(task_get_option("params"))]
-        if task_get_option("ignore_tables"):
-            helper_arguments += ["--ignore-tables", str(task_get_option("ignore_tables"))]
-        if task_get_option("compress"):
-            helper_arguments += ["--compress"]
-        if task_get_option("slave"):
-            helper_arguments += ["--slave", str(task_get_option("slave"))]
-        helper_arguments += ['-N', 'slavehelper', '--dump-on-slave-helper']
-        task_id = task_low_level_submission('dbdump', task_get_task_param('user'), '-P4', *helper_arguments)
-        write_message("Slave scheduled with ID %s" % task_id)
-        task_update_progress("DONE")
-        return True
-    elif task_get_option('dump_on_slave_helper_mode'):
-        write_message("Dumping on slave mode")
-        connection = get_connection_for_dump_on_slave()
-        write_message("... checking if slave is well down...")
-        check_slave_is_down(connection)
-        host = CFG_DATABASE_SLAVE
+    connection = None
+    try:
+        if task_get_option('slave') and not task_get_option('dump_on_slave_helper_mode'):
+            connection = get_connection_for_dump_on_slave()
+            write_message("Dump on slave requested")
+            write_message("... checking if slave is well up...")
+            check_slave_is_up(connection)
+            write_message("... checking if slave is in consistent state...")
+            check_slave_is_in_consistent_state(connection)
+            write_message("... detaching slave database...")
+            detach_slave(connection)
+            write_message("... scheduling dump on slave helper...")
+            helper_arguments = []
+            if task_get_option("number"):
+                helper_arguments += ["--number", str(task_get_option("number"))]
+            if task_get_option("output"):
+                helper_arguments += ["--output", str(task_get_option("output"))]
+            if task_get_option("params"):
+                helper_arguments += ["--params", str(task_get_option("params"))]
+            if task_get_option("ignore_tables"):
+                helper_arguments += ["--ignore-tables", str(task_get_option("ignore_tables"))]
+            if task_get_option("compress"):
+                helper_arguments += ["--compress"]
+            if task_get_option("slave"):
+                helper_arguments += ["--slave", str(task_get_option("slave"))]
+            helper_arguments += ['-N', 'slavehelper', '--dump-on-slave-helper']
+            task_id = task_low_level_submission('dbdump', task_get_task_param('user'), '-P4', *helper_arguments)
+            write_message("Slave scheduled with ID %s" % task_id)
+            task_update_progress("DONE")
+            return True
+        elif task_get_option('dump_on_slave_helper_mode'):
+            write_message("Dumping on slave mode")
+            connection = get_connection_for_dump_on_slave()
+            write_message("... checking if slave is well down...")
+            check_slave_is_down(connection)
+            host = CFG_DATABASE_SLAVE
 
-    task_update_progress("Reading parameters")
-    write_message("Reading parameters started")
-    output_dir = task_get_option('output', CFG_LOGDIR)
-    output_num = task_get_option('number', 5)
-    params = task_get_option('params', None)
-    compress = task_get_option('compress', False)
-    slave = task_get_option('slave', False)
-    ignore_tables = task_get_option('ignore_tables', None)
-    if ignore_tables:
-        ignore_tables = get_table_names(ignore_tables)
-    else:
-        ignore_tables = None
+        task_update_progress("Reading parameters")
+        write_message("Reading parameters started")
+        output_dir = task_get_option('output', CFG_LOGDIR)
+        output_num = task_get_option('number', 5)
+        params = task_get_option('params', None)
+        compress = task_get_option('compress', False)
+        slave = task_get_option('slave', False)
+        ignore_tables = task_get_option('ignore_tables', None)
+        if ignore_tables:
+            ignore_tables = get_table_names(ignore_tables)
+        else:
+            ignore_tables = None
 
-    output_file_suffix = task_get_task_param('task_starting_time')
-    output_file_suffix = output_file_suffix.replace(' ', '_') + '.sql'
-    if compress:
-        output_file_suffix = "%s.gz" % (output_file_suffix,)
-    write_message("Reading parameters ended")
+        output_file_suffix = task_get_task_param('task_starting_time')
+        output_file_suffix = output_file_suffix.replace(' ', '_') + '.sql'
+        if compress:
+            output_file_suffix = "%s.gz" % (output_file_suffix,)
+        write_message("Reading parameters ended")
 
-    # make dump:
-    task_update_progress("Dumping database")
-    write_message("Database dump started")
+        # make dump:
+        task_update_progress("Dumping database")
+        write_message("Database dump started")
 
-    if slave:
-        output_file_prefix = 'slave-%s-dbdump-' % (CFG_DATABASE_NAME,)
-    else:
-        output_file_prefix = '%s-dbdump-' % (CFG_DATABASE_NAME,)
-    output_file = output_file_prefix + output_file_suffix
-    dump_path = output_dir + os.sep + output_file
-    dump_database(dump_path, \
-                    host=host,
-                    port=port,
-                    params=params, \
-                    compress=compress, \
-                    ignore_tables=ignore_tables)
-
-    if task_get_option('dump_on_slave_helper_mode'):
-        write_message("Reattaching slave")
-        attach_slave(connection)
-    write_message("Database dump ended")
+        if slave:
+            output_file_prefix = 'slave-%s-dbdump-' % (CFG_DATABASE_NAME,)
+        else:
+            output_file_prefix = '%s-dbdump-' % (CFG_DATABASE_NAME,)
+        output_file = output_file_prefix + output_file_suffix
+        dump_path = output_dir + os.sep + output_file
+        dump_database(dump_path, \
+                        host=host,
+                        port=port,
+                        params=params, \
+                        compress=compress, \
+                        ignore_tables=ignore_tables)
+        write_message("Database dump ended")
+    finally:
+        if connection and task_get_option('dump_on_slave_helper_mode'):
+            write_message("Reattaching slave")
+            attach_slave(connection)
     # prune old dump files:
     task_update_progress("Pruning old dump files")
     write_message("Pruning old dump files started")
