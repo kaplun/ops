@@ -82,7 +82,7 @@ def format_element(bfo, limit, separator='; ',
     # HepData and only-INSPIRE data records inherit the list of authors from the original paper
     if (bfo.field("520__9") == "HEPDATA") or (bfo.field("520__9") == "INSPIRE"):
         parent_recid = bfo.field("786__w")
-        bfo_parent = int(BibFormatObject(parent_recid))
+        bfo_parent = BibFormatObject(int(parent_recid))
 
         authors = []
         authors_1 = bfo_parent.fields('100__', repeatable_subfields_p=True)
