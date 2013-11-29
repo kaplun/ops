@@ -648,6 +648,8 @@ def check_pdf3(result):
 
 
 def check_pdf(result, output, output_bad_pdftotext=""):
+    print 'output', repr(output)
+    print 'result', repr(result)
     msg = ""
     for line in output.splitlines():
         line = line.strip()
