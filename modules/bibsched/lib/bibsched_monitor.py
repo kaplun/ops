@@ -285,7 +285,6 @@ class Manager(object):
                 self.repaint()
                 self.display_in_footer("only not done processes are displayed")
             elif char == ord("3"):
-                raise Exception()
                 self.display = 3
                 self.first_visible_line = 0
                 self.selected_line = self.header_lines
