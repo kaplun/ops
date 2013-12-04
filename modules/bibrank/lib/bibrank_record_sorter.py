@@ -439,9 +439,9 @@ def find_citations(hitset, verbose):
         cites_counts = get_citation_dict('citations_counts')
         ret = [(recid, weight) for recid, weight in cites_counts
                                                         if recid in hitset]
-        ret = list(reversed(ret))
         recids_without_cites = hitset - get_citation_dict('citations_keys')
         ret.extend([(recid, 0) for recid in recids_without_cites])
+        ret = list(reversed(ret))
     else:
         ret = get_cited_by_weight(hitset)
         ret.sort(key=itemgetter(1))
