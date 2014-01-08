@@ -343,7 +343,7 @@ class Template:
                 <tr>
                   <td><input class="formbutton" type="submit" value="%(update_settings)s" /></td>
                 </tr>
-              </table>
+              </table></form>
         """ % {
           'sitesecureurl' : CFG_SITE_SECURE_URL,
           'bibcatalog_username' : bibcatalog_username,
@@ -377,6 +377,32 @@ class Template:
             <tr><td></td><td><input class="formbutton" type="submit" value="%(update_settings)s" /></td></tr>
         </table></form>""" % {
             'select_lang' : _('Select desired language of the web interface.'),
+            'update_settings' : _('Update settings')
+        }
+        return out
+
+    def tmpl_user_profiliing_settings(self, ln, enable_profiling):
+        _ = gettext_set_language(ln)
+        out = """
+            <form method="post" action="%(sitesecureurl)s/youraccount/change" name="edit_profiling_settings">
+              <p><big><strong class="headline">%(edit_settings)s</strong></big></p>
+              <table>
+                <tr><td align="right"><select name="profiling">
+        """ % {
+          'sitesecureurl' : CFG_SITE_SECURE_URL,
+          'edit_settings' : _("Edit profiling settings"),
+        }
+        out += """<option %(selected)s value="0">%(desc)s</option>""" % {
+            'selected' : 'selected="selected"' if enable_profiling is False else '',
+            'desc' : _("Disabled")
+        }
+        out += """<option %(selected)s value="1">%(desc)s</option>""" % {
+            'selected' : 'selected="selected"' if enable_profiling is True else '',
+            'desc' : _("Enabled")
+        }
+        out += """</select></td><td valign="top"></td></tr>
+            <tr><td></td><td><input class="formbutton" type="submit" value="%(update_settings)s" /></td></tr>
+        </table></form>""" % {
             'update_settings' : _('Update settings')
         }
         return out
