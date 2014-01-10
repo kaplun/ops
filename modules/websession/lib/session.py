@@ -626,8 +626,8 @@ if CFG_WEBSESSION_STORAGE == 'redis':
             return get_redis().delete(self.generate_key(sid))
 
         def save_in_storage(self, sid, session_object, timeout, uid):  # pylint: disable=W0613
-            return get_redis().set(self.generate_key(sid),
-                                   session_object,
-                                   timeout)
+            return get_redis().setex(self.generate_key(sid),
+                                     session_object,
+                                     timeout)
 
     InvenioSession = RedisInvenioSession
