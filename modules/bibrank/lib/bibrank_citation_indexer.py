@@ -32,6 +32,7 @@ from invenio.dbquery import run_sql
 from invenio.bibindex_tokenizers.BibIndexJournalTokenizer import \
     CFG_JOURNAL_PUBINFO_STANDARD_FORM, \
     CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK
+from invenio.redisutils import get_redis
 from invenio.search_engine import search_pattern, \
                                   search_unit, \
                                   get_collection_reclist
@@ -42,6 +43,7 @@ from invenio.bibtask import write_message, task_get_option, \
                      task_get_task_param
 from invenio.bibindex_engine import get_field_tags
 from invenio.docextract_record import get_record
+from invenio.dbquery import serialize_via_marshal
 
 re_CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK \
                    = re.compile(CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK)
@@ -190,7 +192,16 @@ def process_and_store(recids, config, chunk_size):
     else:
         weights = None
 
+    store_weights_cache(weights)
+
     return weights
+
+
+def store_weights_cache(weights):
+    """Store into key/value store"""
+    redis = get_redis()
+    redis.set('citations_weights', serialize_via_marshal(weights))
+
 
 def process_chunk(recids, config):
     tags = get_tags_config(config)
