@@ -52,7 +52,7 @@ from invenio.search_engine import perform_request_search, \
      search_pattern, \
      search_unit_in_bibrec
 from invenio.dbquery import run_sql, DatabaseError, serialize_via_marshal, \
-     deserialize_via_marshal, wash_table_column_name
+     deserialize_via_marshal, wash_table_column_name, real_escape_string
 from invenio.bibindex_engine_washer import wash_index_term
 from invenio.bibtask import task_init, write_message, get_datetime, \
     task_set_option, task_get_option, task_get_task_param, \
@@ -178,24 +178,45 @@ def get_author_canonical_ids_for_recid(recID):
 def swap_temporary_reindex_tables(index_id, reindex_prefix="tmp_"):
     """Atomically swap reindexed temporary table with the original one.
     Delete the now-old one."""
-    write_message("Putting new tmp index tables for id %s into production" % index_id)
-    run_sql(
-        "RENAME TABLE " +
-        "idxWORD%02dR TO old_idxWORD%02dR," % (index_id, index_id) +
-        "%sidxWORD%02dR TO idxWORD%02dR," % (reindex_prefix, index_id, index_id) +
-        "idxWORD%02dF TO old_idxWORD%02dF," % (index_id, index_id) +
-        "%sidxWORD%02dF TO idxWORD%02dF," % (reindex_prefix, index_id, index_id) +
-        "idxPAIR%02dR TO old_idxPAIR%02dR," % (index_id, index_id) +
-        "%sidxPAIR%02dR TO idxPAIR%02dR," % (reindex_prefix, index_id, index_id) +
-        "idxPAIR%02dF TO old_idxPAIR%02dF," % (index_id, index_id) +
-        "%sidxPAIR%02dF TO idxPAIR%02dF," % (reindex_prefix, index_id, index_id) +
-        "idxPHRASE%02dR TO old_idxPHRASE%02dR," % (index_id, index_id) +
-        "%sidxPHRASE%02dR TO idxPHRASE%02dR," % (reindex_prefix, index_id, index_id) +
-        "idxPHRASE%02dF TO old_idxPHRASE%02dF," % (index_id, index_id) +
-        "%sidxPHRASE%02dF TO idxPHRASE%02dF;" % (reindex_prefix, index_id, index_id)
-    )
-    write_message("Dropping old index tables for id %s" % index_id)
-    run_sql("DROP TABLE old_idxWORD%02dR, old_idxWORD%02dF, old_idxPAIR%02dR, old_idxPAIR%02dF, old_idxPHRASE%02dR, old_idxPHRASE%02dF" % (index_id, index_id, index_id, index_id, index_id, index_id)) # kwalitee: disable=sql
+    if task_get_option("apply-reindex-tables"):
+        write_message("Putting new tmp index tables for id %s into production" % index_id)
+        run_sql(
+            "RENAME TABLE " +
+            "idxWORD%02dR TO old_idxWORD%02dR," % (index_id, index_id) +
+            "%sidxWORD%02dR TO idxWORD%02dR," % (reindex_prefix, index_id, index_id) +
+            "idxWORD%02dF TO old_idxWORD%02dF," % (index_id, index_id) +
+            "%sidxWORD%02dF TO idxWORD%02dF," % (reindex_prefix, index_id, index_id) +
+            "idxPAIR%02dR TO old_idxPAIR%02dR," % (index_id, index_id) +
+            "%sidxPAIR%02dR TO idxPAIR%02dR," % (reindex_prefix, index_id, index_id) +
+            "idxPAIR%02dF TO old_idxPAIR%02dF," % (index_id, index_id) +
+            "%sidxPAIR%02dF TO idxPAIR%02dF," % (reindex_prefix, index_id, index_id) +
+            "idxPHRASE%02dR TO old_idxPHRASE%02dR," % (index_id, index_id) +
+            "%sidxPHRASE%02dR TO idxPHRASE%02dR," % (reindex_prefix, index_id, index_id) +
+            "idxPHRASE%02dF TO old_idxPHRASE%02dF," % (index_id, index_id) +
+            "%sidxPHRASE%02dF TO idxPHRASE%02dF;" % (reindex_prefix, index_id, index_id)
+        )
+        write_message("Dropping old index tables for id %s" % index_id)
+        run_sql("DROP TABLE old_idxWORD%02dR, old_idxWORD%02dF, old_idxPAIR%02dR, old_idxPAIR%02dF, old_idxPHRASE%02dR, old_idxPHRASE%02dF" % (index_id, index_id, index_id, index_id, index_id, index_id)) # kwalitee: disable=sql
+    else:
+        write_message("In order to put new tmp index tables for id %s into production" % index_id)
+        write_message("please manually execute the following SQL queries (when bibindex is not running):")
+        write_message("    RENAME TABLE " +
+            "idxWORD%02dR TO old_idxWORD%02dR," % (index_id, index_id) +
+            "%sidxWORD%02dR TO idxWORD%02dR," % (reindex_prefix, index_id, index_id) +
+            "idxWORD%02dF TO old_idxWORD%02dF," % (index_id, index_id) +
+            "%sidxWORD%02dF TO idxWORD%02dF," % (reindex_prefix, index_id, index_id) +
+            "idxPAIR%02dR TO old_idxPAIR%02dR," % (index_id, index_id) +
+            "%sidxPAIR%02dR TO idxPAIR%02dR," % (reindex_prefix, index_id, index_id) +
+            "idxPAIR%02dF TO old_idxPAIR%02dF," % (index_id, index_id) +
+            "%sidxPAIR%02dF TO idxPAIR%02dF," % (reindex_prefix, index_id, index_id) +
+            "idxPHRASE%02dR TO old_idxPHRASE%02dR," % (index_id, index_id) +
+            "%sidxPHRASE%02dR TO idxPHRASE%02dR," % (reindex_prefix, index_id, index_id) +
+            "idxPHRASE%02dF TO old_idxPHRASE%02dF," % (index_id, index_id) +
+            "%sidxPHRASE%02dF TO idxPHRASE%02dF;" % (reindex_prefix, index_id, index_id))
+        write_message("    DROP TABLE old_idxWORD%02dR, old_idxWORD%02dF, old_idxPAIR%02dR, old_idxPAIR%02dF, old_idxPHRASE%02dR, old_idxPHRASE%02dF;" % (index_id, index_id, index_id, index_id, index_id, index_id))
+        starting_time = real_escape_string(task_get_task_param('task_starting_time'))
+        write_message("    UPDATE idxINDEX SET last_updated='%s' WHERE id=%s;" %
+                    (starting_time, index_id,))
 
 def init_temporary_reindex_tables(index_id, reindex_prefix="tmp_"):
     """Create reindexing temporary tables."""
@@ -250,7 +271,6 @@ def init_temporary_reindex_tables(index_id, reindex_prefix="tmp_"):
                         type enum('CURRENT','FUTURE','TEMPORARY') NOT NULL default 'CURRENT',
                         PRIMARY KEY  (id_bibrec,type)
                         ) ENGINE=MyISAM""" % (reindex_prefix, index_id))
-    run_sql("UPDATE idxINDEX SET last_updated='0000-00-00 00:00:00' WHERE id=%s", (index_id,))
 
 
 def remove_subfields(s):
@@ -1221,6 +1241,8 @@ def main():
   -m, --modified=from[,to]\tselect according to modification date
   -c, --collection=c1[,c2]\tselect according to collection
   -R, --reindex\treindex the selected indexes from scratch
+  --apply-reindex-tables\tperform the swap of the reindexed table at the end
+                        \tof the process.
 
  Repairing options:
   -k, --check\t\tcheck consistency for all records in the table(s)
@@ -1244,6 +1266,7 @@ def main():
                 "reindex",
                 "maxmem=",
                 "flush=",
+                "apply-reindex-tables",
             ]),
             task_stop_helper_fnc=task_stop_table_close_fnc,
             task_submit_elaborate_specific_parameter_fnc=task_submit_elaborate_specific_parameter,
@@ -1296,6 +1319,8 @@ def task_submit_elaborate_specific_parameter(key, value, opts, args):
                 (base_process_size + 1000))
     elif key in ("-f", "--flush"):
         task_set_option("flush", int(value))
+    elif key in ("--apply-reindex-tables"):
+        task_set_option("apply-reindex-tables", int(value))
     else:
         return False
     return True
@@ -1403,6 +1428,14 @@ def task_run_core():
                         recIDs_range.append([recID, recID])
                     wordTable.add_recIDs(recIDs_range, task_get_option("flush"))
                     task_sleep_now_if_required(can_stop_too=True)
+                elif task_get_option("reindex"):
+                    max_recid = run_sql("SELECT max(id) FROM bibrec")
+                    if max_recid:
+                        max_recid = max_recid[0][0]
+                    else:
+                        max_recid = 1
+                    wordTable.add_recIDs([[1, max_recid]], task_get_option("flush"))
+                    task_sleep_now_if_required(can_stop_too=True)
                 else:
                     wordTable.add_recIDs_by_date(task_get_option("modified"), task_get_option("flush"))
                     ## here we used to update last_updated info, if run via automatic mode;
@@ -1466,6 +1499,14 @@ def task_run_core():
                         recIDs_range.append([recID, recID])
                     wordTable.add_recIDs(recIDs_range, task_get_option("flush"))
                     task_sleep_now_if_required(can_stop_too=True)
+                elif task_get_option("reindex"):
+                    max_recid = run_sql("SELECT max(id) FROM bibrec")
+                    if max_recid:
+                        max_recid = max_recid[0][0]
+                    else:
+                        max_recid = 1
+                    wordTable.add_recIDs([[1, max_recid]], task_get_option("flush"))
+                    task_sleep_now_if_required(can_stop_too=True)
                 else:
                     wordTable.add_recIDs_by_date(task_get_option("modified"), task_get_option("flush"))
                     # let us update last_updated timestamp info, if run via automatic mode:
@@ -1527,6 +1568,14 @@ def task_run_core():
                     for recID in recIDs:
                         recIDs_range.append([recID, recID])
                     wordTable.add_recIDs(recIDs_range, task_get_option("flush"))
+                    task_sleep_now_if_required(can_stop_too=True)
+                elif task_get_option("reindex"):
+                    max_recid = run_sql("SELECT max(id) FROM bibrec")
+                    if max_recid:
+                        max_recid = max_recid[0][0]
+                    else:
+                        max_recid = 1
+                    wordTable.add_recIDs([[1, max_recid]], task_get_option("flush"))
                     task_sleep_now_if_required(can_stop_too=True)
                 else:
                     wordTable.add_recIDs_by_date(task_get_option("modified"), task_get_option("flush"))
