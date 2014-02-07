@@ -836,8 +836,8 @@ def handle_file_post(req, allowed_mimetypes=None):
     the_file = os.fdopen(fd, 'w')
     ## Let's read the file
     while True:
-        chunk = req.read(max(10240, clen))
-        if len(chunk) < clen:
+        chunk = req.read(min(10240, clen))
+        if len(chunk) < min(10240, clen):
             ## We expected to read at least clen (which is different than 0)
             ## but chunk was shorter! Gosh! Error! Panic!
             the_file.close()
