@@ -13,4 +13,4 @@ python-magic
 python-openid
 python-dateutil
 rdflib
-
+HTMLParser
