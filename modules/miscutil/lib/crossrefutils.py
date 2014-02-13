@@ -19,18 +19,22 @@
 
 """ API to fetch metadata in MARCXML format from crossref site using DOI """
 
-import urllib, urllib2
+import urllib
+import urllib2
 from xml.dom.minidom import parse
 from time import sleep
 
-from invenio.config import CFG_ETCDIR, CFG_CROSSREF_USERNAME, \
- CFG_CROSSREF_PASSWORD, CFG_CROSSREF_EMAIL
+from invenio.config import (CFG_ETCDIR,
+                            CFG_CROSSREF_USERNAME,
+                            CFG_CROSSREF_PASSWORD,
+                            CFG_CROSSREF_EMAIL)
 from invenio.bibconvert_xslt_engine import convert
 from invenio.bibrecord import record_get_field_value
 
 FIELDS_JOURNAL = 'issn,title,author,volume,issue,page,year,type,doi'.split(',')
 FIELDS_BOOK = ('isbn,ser_title,vol_title,author,volume,edition_number,'
                + 'page,year,component_number,type,doi').split(',')
+
 
 # Exceptions classes
 class CrossrefError(Exception):
@@ -42,6 +46,7 @@ class CrossrefError(Exception):
     def __str__(self):
         """Returns error code"""
         return repr(self.code)
+
 
 def get_marcxml_for_doi(doi):
     """
@@ -78,8 +83,9 @@ def get_marcxml_for_doi(doi):
     (CFG_ETCDIR, "crossref2marcxml.xsl")
 
     output = convert(xmltext=content, \
-                    template_filename=xsl_crossref2marc_config)
+                     template_filename=xsl_crossref2marc_config)
     return output
+
 
 def get_doi_for_records(records):
     """
@@ -99,16 +105,16 @@ def get_doi_for_records(records):
     pipes = []
     for record in records:
         data = [
-            "", # ISSN
-            "", # JOURNAL TITLE (773__p)
-            "", # AUTHOR (Family name of 100__a)
-            "", # VOLUME (773__v)
-            "", # ISSUE (773__n)
-            "", # PAGE (773__c)
-            "", # YEAR  (773__y)
-            "", # RESOURCE TYPE
-            "", # KEY
-            ""  # DOI
+            "",  # ISSN
+            "",  # JOURNAL TITLE (773__p)
+            "",  # AUTHOR (Family name of 100__a)
+            "",  # VOLUME (773__v)
+            "",  # ISSUE (773__n)
+            "",  # PAGE (773__c)
+            "",  # YEAR  (773__y)
+            "",  # RESOURCE TYPE
+            "",  # KEY
+            ""   # DOI
         ]
 
         full_author = record_get_field_value(record, "100", "", "", "a").split(",")
@@ -154,6 +160,9 @@ def get_doi_for_records(records):
                 except (urllib2.URLError, urllib2.HTTPError):
                     sleep(5)
                     retry_attempt += 1
+            else:
+                # Executed if retries are maxed out. We skip this record.
+                continue
 
             results = document.getElementsByTagName("doi_record")
 
@@ -202,4 +211,3 @@ def get_metadata_for_dois(dois):
                 raise CrossrefError("Crossref response not understood")
 
     return metadata
-
