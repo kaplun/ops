@@ -93,7 +93,6 @@ from invenio.bibrecord import create_record, print_rec, record_add_field, \
 
 from invenio.config import CFG_BIBEDIT_PROTECTED_FIELDS, CFG_CERN_SITE, \
     CFG_SITE_URL, CFG_SITE_RECORD, CFG_BIBEDIT_KB_SUBJECTS, \
-    CFG_BIBEDIT_KB_INSTITUTIONS, CFG_BIBEDIT_AUTOCOMPLETE_INSTITUTIONS_FIELDS, \
     CFG_INSPIRE_SITE
 from invenio.search_engine import record_exists, perform_request_search, \
     guess_primary_collection_of_a_record
@@ -260,7 +259,6 @@ def perform_request_init(uid, ln, req, lastupdated):
             'gKEYWORD_TAG' : '"' + CFG_BIBEDIT_KEYWORD_TAG  + '"',
             'gREQUESTS_UNTIL_SAVE' : CFG_BIBEDIT_REQUESTS_UNTIL_SAVE,
             'gAVAILABLE_KBS': get_available_kbs(),
-            'gTagsToAutocomplete': CFG_BIBEDIT_AUTOCOMPLETE_INSTITUTIONS_FIELDS,
             'gDOILookupField': '"' + CFG_BIBEDIT_DOI_LOOKUP_FIELD + '"',
             'gDisplayReferenceTags': CFG_BIBEDIT_DISPLAY_REFERENCE_TAGS,
             'gDisplayAuthorTags': CFG_BIBEDIT_DISPLAY_AUTHOR_TAGS,
@@ -313,7 +311,7 @@ def get_available_kbs():
     Return list of KBs that are available in the system to be used with
     BibEdit
     """
-    kb_list = [CFG_BIBEDIT_KB_INSTITUTIONS, CFG_BIBEDIT_KB_SUBJECTS]
+    kb_list = [CFG_BIBEDIT_KB_SUBJECTS]
     available_kbs = [kb for kb in kb_list if kb_exists(kb)]
     return available_kbs
 
