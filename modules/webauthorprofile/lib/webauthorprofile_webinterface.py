@@ -683,8 +683,8 @@ class WebAuthorPages(WebInterfaceDirectory):
                     'cname': webapi.get_canonical_id_from_person_id(person_id),
                     'link_to_record': ulevel == "admin",
                     'hepnames_link': "%s/%s/" % (CFG_BASE_URL, "record"),
-                    'new_record_link': 'http://slac.stanford.edu/spires/hepnames/additions.shtml',
-                    'update_link': "http://inspirehep.net/person/update?IRN=",
+                    'new_record_link': 'http://qa.inspirehep.net/author/new?aid=%s' % (webapi.get_canonical_id_from_person_id(person_id)),
+                    'update_link': "http://qa.inspirehep.net/author/update?recid=",
                     'profile_link': "%s/%s" % (CFG_BASE_URL, "author/profile/")
                 })
 
